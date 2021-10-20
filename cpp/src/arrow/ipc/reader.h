@@ -212,6 +212,53 @@ class ARROW_EXPORT RecordBatchFileReader
       arrow::internal::Executor* executor = NULLPTR) = 0;
 };
 
+/// \class IoRecordedRandomAccessFile
+/// \brief An RandomAccessFile that doesn't perform real IO, but only save all the IO
+/// operations it receives, including read operation's <offset, length>, for replaying
+/// later
+class ARROW_EXPORT IoRecordedRandomAccessFile : public io::RandomAccessFile {
+ public:
+  explicit IoRecordedRandomAccessFile(const int64_t file_size)
+      : file_size_(file_size), position_(0) {}
+
+  Status Close() override;
+
+  Status Abort() override;
+
+  /// \brief Return the position in this stream
+  Result<int64_t> Tell() const override;
+
+  /// \brief Return whether the stream is closed
+  bool closed() const override;
+
+  Status Seek(int64_t position) override;
+
+  Result<int64_t> GetSize() override;
+
+  Result<int64_t> ReadAt(int64_t position, int64_t nbytes, void* out) override;
+
+  Result<std::shared_ptr<Buffer>> ReadAt(int64_t position, int64_t nbytes) override;
+
+  Result<int64_t> Read(int64_t nbytes, void* out) override;
+
+  Result<std::shared_ptr<Buffer>> Read(int64_t nbytes) override;
+
+  const io::IOContext& io_context() const override;
+
+  /// \brief Return a vector containing all the read operations this file receives, each
+  /// read operation is represented as an arrow::io::ReadRange
+  ///
+  /// \return a vector
+  const std::vector<io::ReadRange>& GetReadRanges() const;
+
+ private:
+  const int64_t file_size_;
+  std::vector<io::ReadRange> read_ranges_;
+  int64_t position_;
+  bool closed_ = false;
+  io::IOContext io_context_;
+};
+
 /// \brief A general listener class to receive events.
 ///
 /// You must implement callback methods for interested events.
