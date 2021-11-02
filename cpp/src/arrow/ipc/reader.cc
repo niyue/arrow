@@ -1412,7 +1412,6 @@ Result<int64_t> IoRecordedRandomAccessFile::ReadAt(int64_t position, int64_t nby
     // no real IO is performed, it is only saved into a vector for replaying later
     read_ranges_.emplace_back(io::ReadRange{position, num_bytes_read});
   }
-  position_ += num_bytes_read;
   return num_bytes_read;
 }
 
@@ -1440,11 +1439,16 @@ Status IoRecordedRandomAccessFile::Seek(int64_t position) {
 }
 
 Result<int64_t> IoRecordedRandomAccessFile::Read(int64_t nbytes, void* out) {
-  return ReadAt(position_, nbytes, out);
+  ARROW_ASSIGN_OR_RAISE(int64_t bytes_read, ReadAt(position_, nbytes, out));
+  position_ += bytes_read;
+  return bytes_read;
 }
 
 Result<std::shared_ptr<Buffer>> IoRecordedRandomAccessFile::Read(int64_t nbytes) {
-  return ReadAt(position_, nbytes);
+  ARROW_ASSIGN_OR_RAISE(std::shared_ptr<Buffer> buffer, ReadAt(position_, nbytes));
+  auto num_bytes_read = std::min(file_size_, position_ + nbytes) - position_;
+  position_ += num_bytes_read;
+  return std::move(buffer);
 }
 
 const io::IOContext& IoRecordedRandomAccessFile::io_context() const {
