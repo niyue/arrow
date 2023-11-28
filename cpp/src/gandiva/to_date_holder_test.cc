@@ -29,14 +29,18 @@ namespace gandiva {
 
 class TestToDateHolder : public ::testing::Test {
  public:
-  FunctionNode BuildToDate(std::string pattern) {
+  FunctionNode BuildToDate(std::string pattern,
+                           std::shared_ptr<Node> suppress_error_node = nullptr) {
     auto field = std::make_shared<FieldNode>(arrow::field("in", arrow::utf8()));
     auto pattern_node =
         std::make_shared<LiteralNode>(arrow::utf8(), LiteralHolder(pattern), false);
-    auto suppress_error_node =
-        std::make_shared<LiteralNode>(arrow::int32(), LiteralHolder(0), false);
-    return FunctionNode("to_date_utf8_utf8_int32",
-                        {field, pattern_node, suppress_error_node}, arrow::int64());
+    if (suppress_error_node == nullptr) {
+      suppress_error_node =
+          std::make_shared<LiteralNode>(arrow::int32(), LiteralHolder(0), false);
+    }
+    return {"to_date_utf8_utf8_int32",
+            {field, pattern_node, std::move(suppress_error_node)},
+            arrow::int64()};
   }
 
  protected:
@@ -168,4 +172,15 @@ TEST_F(TestToDateHolder, TestSimpleDateYear) {
   EXPECT_EQ(millis_since_epoch, 915148800000);
 }
 
+TEST_F(TestToDateHolder, TestMakeFromFunctionNode) {
+  auto to_date_func = BuildToDate("YYYY");
+  EXPECT_OK_AND_ASSIGN(auto to_date_holder, ToDateHolder::Make(to_date_func));
+}
+
+TEST_F(TestToDateHolder, TestMakeFromInvalidSurpressParamFunctionNode) {
+  auto to_date_func =
+      BuildToDate("YYYY", std::make_shared<FieldNode>(arrow::field("in", arrow::utf8())));
+  auto status = ToDateHolder::Make(to_date_func).status();
+  EXPECT_EQ(status.IsInvalid(), true) << status.message();
+}
 }  // namespace gandiva
