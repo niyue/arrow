@@ -31,6 +31,7 @@
       "inherits": "base",
       "hidden": true,
       "cacheVariables": {
+        "ARROW_BUILD_TESTS": "ON",
         "CMAKE_BUILD_TYPE": "Release"
       }
     },
