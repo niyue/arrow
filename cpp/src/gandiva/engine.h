@@ -133,6 +133,12 @@ class GANDIVA_EXPORT Engine {
   static inline const std::unordered_set<std::string> internal_functions_ = {
       "gdv_fn_populate_varlen_vector",
       "gdv_fn_context_arena_reset",
+      "gdv_fn_in_expr_lookup_int32",
+      "gdv_fn_in_expr_lookup_int64",
+      "gdv_fn_in_expr_lookup_float",
+      "gdv_fn_in_expr_lookup_double",
+      "gdv_fn_in_expr_lookup_decimal",
+      "gdv_fn_in_expr_lookup_utf8",
       "bitMapGetBit",
       "bitMapSetBit",
       "bitMapValidityGetBit",

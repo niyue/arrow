@@ -3705,4 +3705,34 @@ TEST_F(TestProjector, TestLiteralProjection) {
   }
 }
 
+TEST_F(TestProjector, TestInExprProjection) {
+  auto field_in = field("in", int64());
+  auto schema = arrow::schema({field_in});
+
+  // output fields
+  auto field_result = field("res", boolean());
+
+  auto node_in = TreeExprBuilder::MakeField(field_in);
+
+  std::unordered_set<int64_t> values;
+  for (int64_t i = 1; i <= 8; i++) {
+    values.insert(i);
+  }
+  auto in_expr = TreeExprBuilder::MakeInExpressionInt64(node_in, values);
+  auto expr = TreeExprBuilder::MakeExpression(in_expr, field_result);
+
+  // Build a projector for the expressions.
+  std::shared_ptr<Projector> projector;
+  ASSERT_OK(Projector::Make(schema, {expr}, TestConfiguration(), &projector));
+
+  int num_records = 4;
+  auto array = MakeArrowArrayInt64({0, 4, 8, 16}, {true, true, true, true});
+  auto in_batch = arrow::RecordBatch::Make(schema, num_records, {array});
+  auto out = MakeArrowArrayBool({false, true, true, false}, {true, true, true, true});
+
+  arrow::ArrayVector outs;
+  ARROW_EXPECT_OK(projector->Evaluate(*in_batch, pool_, &outs));
+  EXPECT_ARROW_ARRAY_EQUALS(out, outs.at(0));
+}
+
 }  // namespace gandiva
