@@ -43,7 +43,7 @@ mkdir -p $CPP_BUILD_DIR
 pushd $CPP_BUILD_DIR
 
 cmake -GNinja \
-      -DCMAKE_BUILD_TYPE=DEBUG \
+      -DCMAKE_BUILD_TYPE=RELEASE \
       -DCMAKE_INSTALL_PREFIX=$ARROW_HOME \
       -DCMAKE_INSTALL_LIBDIR=lib \
       -DCMAKE_UNITY_BUILD=ON \
@@ -52,6 +52,8 @@ cmake -GNinja \
       -DARROW_CSV=ON \
       -DARROW_FILESYSTEM=ON \
       -DARROW_JSON=ON \
+      -DARROW_WITH_UTF8PROC=ON \
+      -DARROW_GANDIVA=ON \
       $ARROW_ROOT/cpp
 
 ninja install
@@ -65,7 +67,7 @@ pushd $ARROW_ROOT/python
 rm -rf build/  # remove any pesky preexisting build directory
 
 export CMAKE_PREFIX_PATH=${ARROW_HOME}${CMAKE_PREFIX_PATH:+:${CMAKE_PREFIX_PATH}}
-export PYARROW_BUILD_TYPE=Debug
+export PYARROW_BUILD_TYPE=Release
 export PYARROW_CMAKE_GENERATOR=Ninja
 
 # You can run either "develop" or "build_ext --inplace". Your pick

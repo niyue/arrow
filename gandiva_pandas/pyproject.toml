@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "gandiva-pandas"
+version = "0.1.0"
+description = ""
+authors = ["Yue Ni <niyue.com@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pandas = "^2.2.2"
+pyarrow = { file = "pyarrow-16.0.0.dev535+g56186b994.d20240417-cp310-cp310-linux_aarch64.whl" }
+alive-progress = "^3.1.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

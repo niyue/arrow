@@ -1,0 +1,34 @@
+version: '3.7'
+services:
+  pyarrow_dev:
+    privileged: true
+    build:
+       context: ..
+       # dockerfile: python/examples/minimal_build/Dockerfile.ubuntu
+       dockerfile: dev/tasks/linux-packages/apache-arrow/apt/ubuntu-jammy/Dockerfile
+    image: pyarrow_dev
+    container_name: pyarrow
+    command: /bin/bash
+    environment:
+        - SHELL=/bin/bash
+        - TERM=xterm-256color
+        - WORKDIR=/arrow/workspace
+        - LIBRARY_INSTALL_DIR=/arrow/local-libs
+        - CPP_BUILD_DIR=/arrow/arrow-cpp-build
+        - ARROW_HOME=/arrow/dist
+        - ARROW_ROOT=/arrow
+        - LD_LIBRARY_PATH=/arrow/dist/lib
+        - PYARROW_BUILD_TYPE=Release
+        - PYARROW_CMAKE_GENERATOR=Ninja
+        - PYARROW_WITH_GANDIVA=1
+        # - PYARROW_WITH_PARQUET=1
+        # - PYARROW_WITH_FLIGHT=1 # if arrow flight is needed
+        - ARROW_TEST_DATA="$ARROW_ROOT/testing/data"
+        - PARQUET_TEST_DATA="$ARROW_ROOT/cpp/submodules/parquet-testing/data"
+    volumes:
+        - ..:/arrow
+        - /var/run/docker.sock:/var/run/docker.sock:rw
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    stdin_open: true
+    tty: true
