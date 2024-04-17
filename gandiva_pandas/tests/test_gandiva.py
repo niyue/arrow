@@ -27,9 +27,9 @@ def iteration(batches=100):
     return decorator
     
 
-def test_dump_ir():
+def test_init():
     df = gdv_pd.create_df(10)
-    filtered_df = df.gandiva.query("c1 > 100", dump_ir=True)
+    filtered_df = df.gandiva.query("c1 > 100")
     assert len(filtered_df) < 10
 
 
